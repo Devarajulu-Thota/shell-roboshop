@@ -81,10 +81,16 @@ VALIDATE $? "Starting shipping"
 dnf install mysql -y &>>$LOG_FILE
 VALIDATE $? "Install MySQL"
 
-mysql -h mysql.devaraj.site -uroot -p$MYSQL_ROOT_PASSWORD < /app/db/schema.sql &>>$LOG_FILE
-mysql -h mysql.devaraj.site -uroot -p$MYSQL_ROOT_PASSWORD < /app/db/app-user.sql &>>$LOG_FILE
-mysql -h mysql.devaraj.site -uroot -p$MYSQL_ROOT_PASSWORD < /app/db/master-data.sql &>>$LOG_FILE
-VALIDATE $? "Loading data into MySQL"
+mysql -h mysql.devaraj.site -u root -pRoboShop@1 -e 'use cities'
+if [ $? -ne 0 ]
+then
+    mysql -h mysql.devaraj.site -uroot -p$MYSQL_ROOT_PASSWORD < /app/db/schema.sql &>>$LOG_FILE
+    mysql -h mysql.devaraj.site -uroot -p$MYSQL_ROOT_PASSWORD < /app/db/app-user.sql &>>$LOG_FILE
+    mysql -h mysql.devaraj.site -uroot -p$MYSQL_ROOT_PASSWORD < /app/db/master-data.sql &>>$LOG_FILE
+    VALIDATE $? "Loading data into MySQL"
+else
+    echo -e "Data is already loaded into MySQL ... $Y SKIPPING $N"
+fi
 
 systemctl restart shipping &>>$LOG_FILE
 VALIDATE $? "Restarting shipping"
